@@ -1,4 +1,4 @@
-package com.example.myapplication.app
+package com.example.myapplication.core
 
 import android.app.Application
 
