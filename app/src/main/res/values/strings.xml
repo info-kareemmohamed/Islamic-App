@@ -1,5 +1,13 @@
 <resources>
     <string name="app_name">Islamic</string>
+
+    <!--  Home Screen -->
+    <string name="home_screen_top_bar_title">👏 اهلا بك مجددا</string>
+    <string name="home_screen_more">المزيد</string>
+    <string name="home_screen_hadithText">حديث شريف</string>
+
+
+    <!--  Networking Errors-->
     <string name="error_request_timeout">The request timed out.</string>
     <string name="error_too_many_requests">Oops, it seems like your quota is exceeded.</string>
     <string name="error_no_internet">Couldn\'t connect to server, please check your internet connection.</string>
