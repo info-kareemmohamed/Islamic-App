@@ -5,7 +5,7 @@ import com.example.myapplication.R
 import com.example.myapplication.core.domain.NetworkError
 
 
-fun NetworkError.toString(context: Context): String {
+fun NetworkError.asUiText(context: Context): String {
     val resId = when (this) {
         NetworkError.REQUEST_TIMEOUT -> R.string.error_request_timeout
         NetworkError.TOO_MANY_REQUESTS -> R.string.error_too_many_requests
