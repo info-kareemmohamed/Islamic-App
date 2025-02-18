@@ -48,6 +48,8 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)
 
+    implementation(libs.androidx.compose.navigation)
+
     testImplementation(libs.bundles.testing)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
