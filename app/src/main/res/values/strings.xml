@@ -6,6 +6,12 @@
     <string name="home_screen_more">المزيد</string>
     <string name="home_screen_hadithText">حديث شريف</string>
 
+    <!--    IslamicTube Bottom Navigation-->
+    <string name="bottom_navigation_home">الصفحه الرئسية</string>
+    <string name="bottom_navigation_favorite">المفضلة</string>
+    <string name="bottom_navigation_settings">الاعدادات</string>
+    <string name="bottom_navigation_download">التنزيلات</string>
+    <string name="bottom_navigation_latest">كل ماهو جديد</string>
 
     <!--  Networking Errors-->
     <string name="error_request_timeout">The request timed out.</string>

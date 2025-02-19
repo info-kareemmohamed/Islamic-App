@@ -23,6 +23,9 @@ sealed interface Routes {
     data object LatestScreen : Routes
 
     @Serializable
+    data object DownloadScreen : Routes
+
+    @Serializable
     data object IslamicTubeNavigation : Routes
 
     @Serializable
