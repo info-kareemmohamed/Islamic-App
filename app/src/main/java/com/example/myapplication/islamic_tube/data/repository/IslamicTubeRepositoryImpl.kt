@@ -2,25 +2,75 @@ package com.example.myapplication.islamic_tube.data.repository
 
 import com.example.myapplication.core.domain.NetworkError
 import com.example.myapplication.core.domain.Result
+import com.example.myapplication.islamic_tube.data.local.CategoryDao
 import com.example.myapplication.islamic_tube.data.mappres.toCategory
+import com.example.myapplication.islamic_tube.data.mappres.toSubCategory
+import com.example.myapplication.islamic_tube.data.mappres.toVideo
+import com.example.myapplication.islamic_tube.data.mappres.toVideoEntity
 import com.example.myapplication.islamic_tube.data.networking.dto.CategoryDto
 import com.example.myapplication.islamic_tube.data.networking.dto.SubCategoryDto
 import com.example.myapplication.islamic_tube.data.networking.dto.VideoDto
 import com.example.myapplication.islamic_tube.domain.model.Category
+import com.example.myapplication.islamic_tube.domain.model.SubCategory
+import com.example.myapplication.islamic_tube.domain.model.Video
 import com.example.myapplication.islamic_tube.domain.repository.IslamicTubeRepository
 import io.ktor.client.HttpClient
+import kotlinx.coroutines.flow.Flow
 
 class IslamicTubeRepositoryImpl(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val categoryDao: CategoryDao,
 ) : IslamicTubeRepository {
     override suspend fun getIslamicTubeVideos(): Result<List<Category>, NetworkError> {
         // TODO: implement this
         //  return safeCall<Category> { httpClient.get(urlString = "example.com") }
 
+        //Dummy Data
         return Result.Success(getDummyData().map { it.toCategory() })
     }
 
+    override suspend fun getSubCategoryFromNetwork(
+        categoryName: String,
+        subCategoryName: String
+    ): Result<SubCategory, NetworkError> {
 
+        // TODO: implement this
+        //  return safeCall<Category> { httpClient.get(urlString = "example.com") }
+
+        //Dummy Data
+        val dummyData = getDummyData()
+        val category = dummyData.firstOrNull { it.name == categoryName }
+            ?: return Result.Error(NetworkError.UNKNOWN)
+        val subCategory = category.subCategories.firstOrNull { it.name == subCategoryName }
+            ?: return Result.Error(NetworkError.UNKNOWN)
+        return Result.Success(subCategory.toSubCategory())
+    }
+
+    override suspend fun getSubCategoryFromLocal(categoryName: String): List<Video> =
+        categoryDao.getCategoryByName(categoryName)?.videoEntities?.map { it.toVideo() }
+            ?: emptyList()
+
+
+    override fun observeCategoryNamesByVideoUrl(videoUrl: String): Flow<List<String>> =
+        categoryDao.observeCategoryNamesByVideoUrl(videoUrl)
+
+
+    override suspend fun createEmptyCategory(categoryName: String) =
+        categoryDao.createCategoryIfNotExists(categoryName)
+
+
+    override fun observeCategoryNames(): Flow<List<String>> =
+        categoryDao.observeCategoryNames()
+
+
+    override suspend fun upsertVideoCategories(
+        oldCategoryNames: List<String>,
+        newCategoryNames: List<String>,
+        video: Video
+    ) = categoryDao.upsertVideoCategories(oldCategoryNames, newCategoryNames, video.toVideoEntity())
+
+
+    //TODO: Remove this function
     private fun getDummyData(): List<CategoryDto> {
         return listOf(
             CategoryDto(
