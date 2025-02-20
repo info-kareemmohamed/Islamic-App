@@ -26,6 +26,16 @@ interface CategoryDao {
     @Query("SELECT name FROM categories")
     fun observeCategoryNames(): Flow<List<String>>
 
+    @Query(
+        """
+    SELECT name, json_extract(videoEntities, '$[0]') as firstVideo 
+    FROM categories
+    WHERE json_array_length(videoEntities) > 0
+    """
+    )
+    fun observeCategoryNameAndFirstVideo(): Flow<List<CategoryNameAndFirstVideoUrl>>
+
+
     @Transaction
     suspend fun createCategoryIfNotExists(categoryName: String) {
         getCategoryByName(categoryName) ?: upsertCategory(CategoryEntity(categoryName, emptyList()))

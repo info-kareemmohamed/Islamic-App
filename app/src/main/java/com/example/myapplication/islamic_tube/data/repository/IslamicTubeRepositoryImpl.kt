@@ -16,6 +16,7 @@ import com.example.myapplication.islamic_tube.domain.model.Video
 import com.example.myapplication.islamic_tube.domain.repository.IslamicTubeRepository
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class IslamicTubeRepositoryImpl(
     private val httpClient: HttpClient,
@@ -50,6 +51,12 @@ class IslamicTubeRepositoryImpl(
         categoryDao.getCategoryByName(categoryName)?.videoEntities?.map { it.toVideo() }
             ?: emptyList()
 
+    override fun observeCategoryNamesAndFirstVideo(): Flow<Pair<List<Video>, List<String>>> =
+        categoryDao.observeCategoryNameAndFirstVideo().map { list ->
+            val names = list.map { it.name }
+            val videos = list.map { it.firstVideo.toVideo() }
+            videos to names
+        }
 
     override fun observeCategoryNamesByVideoUrl(videoUrl: String): Flow<List<String>> =
         categoryDao.observeCategoryNamesByVideoUrl(videoUrl)

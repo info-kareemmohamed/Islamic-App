@@ -15,4 +15,14 @@ class VideoListConverter {
     fun toVideoList(json: String): List<VideoEntity> {
         return Json.decodeFromString(json)
     }
+
+    @TypeConverter
+    fun fromVideoEntityJson(json: String?): VideoEntity? {
+        return json?.let { Json.decodeFromString<VideoEntity>(it) }
+    }
+
+    @TypeConverter
+    fun videoEntityToJson(video: VideoEntity?): String? {
+        return video?.let { Json.encodeToString(it) }
+    }
 }

@@ -10,6 +10,8 @@ import com.example.myapplication.islamic_tube.domain.repository.IslamicTubeRepos
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -52,32 +54,18 @@ class DetailsViewModel(
         }
     }
 
-    private fun loadLocalData(video: Video, categoryName: String) {
-        _state.update {
-            it.copy(
-                currentCategory = categoryName,
-                currentVideo = video,
-                isLoading = true
-            )
-        }
-        viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    relatedVideos = repo.getSubCategoryFromLocal(categoryName),
-                    isLoading = false
-                )
-            }
-        }
+    private fun loadLocalData(video: Video, categoryName: String) = viewModelScope.launch {
+        _state.update { it.copy(currentCategory = categoryName, currentVideo = video) }
+        _state.update { it.copy(relatedVideos = repo.getSubCategoryFromLocal(categoryName)) }
+
+        observeVideoCategoryNames(video.url)
     }
+
 
     private fun loadNetworkData(video: Video, categoryName: String, subCategoryName: String) =
         viewModelScope.launch {
             _state.update {
-                it.copy(
-                    currentVideo = video,
-                    currentCategory = categoryName,
-                    isLoading = true
-                )
+                it.copy(currentVideo = video, currentCategory = categoryName, isLoading = true)
             }
 
             repo.getSubCategoryFromNetwork(categoryName, subCategoryName)
@@ -89,15 +77,24 @@ class DetailsViewModel(
                     _state.update { it.copy(isLoading = false) }
                 }
 
-            repo.observeCategoryNamesByVideoUrl(video.url).collect { names ->
-                _state.update { it.copy(videoCategoryNames = names) }
-            }
+            observeVideoCategoryNames(video.url)
+
         }
 
     private fun createCategory(categoryName: String) = viewModelScope.launch {
         repo.createEmptyCategory(categoryName)
         _state.update { it.copy(isCreateCategoryDialogVisible = false) }
     }
+
+
+    // Launch a separate flow to observe category names for the video's URL.
+    private fun observeVideoCategoryNames(videoUrl: String) =
+        repo.observeCategoryNamesByVideoUrl(videoUrl)
+            .onEach { names ->
+                _state.update { it.copy(videoCategoryNames = names) }
+            }
+            .launchIn(viewModelScope)
+
 
     private fun saveVideo(video: Video, categories: List<String>) = viewModelScope.launch {
         repo.upsertVideoCategories(

@@ -6,6 +6,7 @@ import com.example.myapplication.islamic_tube.data.local.CategoryDatabase
 import com.example.myapplication.islamic_tube.data.repository.IslamicTubeRepositoryImpl
 import com.example.myapplication.islamic_tube.domain.repository.IslamicTubeRepository
 import com.example.myapplication.islamic_tube.presentation.details.mvi.DetailsViewModel
+import com.example.myapplication.islamic_tube.presentation.favorite.FavoriteViewModel
 import com.example.myapplication.islamic_tube.presentation.home.HomeViewModel
 import io.ktor.client.engine.android.Android
 import org.koin.android.ext.koin.androidContext
@@ -27,4 +28,5 @@ val IslamicTubeModule = module {
 
     viewModel { HomeViewModel(get()) }
     viewModel { DetailsViewModel(get()) }
+    viewModel { FavoriteViewModel(get()) }
 }
