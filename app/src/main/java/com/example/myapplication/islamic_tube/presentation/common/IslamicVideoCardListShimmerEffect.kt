@@ -1,5 +1,3 @@
-@file:JvmName("IslamicVideoCardShimmerEffectKt")
-
 package com.example.myapplication.islamic_tube.presentation.common
 
 import androidx.compose.foundation.layout.Arrangement
@@ -12,20 +10,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun IslamicVideoCardListShimmerEffect(count:Int = 5){
+fun IslamicVideoCardListShimmerEffect(count: Int = 5) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(count) {
-            IslamicVideoCardListShimmerEffect()
+            IslamicVideoCardShimmerEffect()
         }
     }
 }
 
 @Preview
 @Composable
-fun DetailsVideoCardShimmerEffectPreview(){
+fun DetailsVideoCardShimmerEffectPreview() {
     IslamicVideoCardListShimmerEffect()
 }

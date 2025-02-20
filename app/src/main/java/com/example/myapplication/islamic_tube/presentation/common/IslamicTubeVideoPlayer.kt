@@ -1,4 +1,4 @@
-package com.example.myapplication.islamic_tube.presentation.details.components
+package com.example.myapplication.islamic_tube.presentation.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

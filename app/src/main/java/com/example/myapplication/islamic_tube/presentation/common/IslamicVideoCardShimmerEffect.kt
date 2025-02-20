@@ -26,7 +26,7 @@ import com.example.myapplication.core.presentation.theme.ui.MyApplicationTheme
 
 
 @Composable
-fun IslamicVideoCardListShimmerEffect() {
+fun IslamicVideoCardShimmerEffect() {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
@@ -55,7 +55,7 @@ fun IslamicVideoCardListShimmerEffect() {
 @Composable
 fun IslamicVideoCardShimmerEffectPreview() {
     MyApplicationTheme {
-        IslamicVideoCardListShimmerEffect()
+        IslamicVideoCardShimmerEffect()
     }
 }
 
