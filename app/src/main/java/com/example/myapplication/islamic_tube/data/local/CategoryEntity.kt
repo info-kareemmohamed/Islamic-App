@@ -5,6 +5,11 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
 
+data class CategoryNameAndFirstVideoUrl(
+    val name: String,
+    val firstVideo: VideoEntity
+)
+
 @Serializable
 data class VideoEntity(
     val title: String,

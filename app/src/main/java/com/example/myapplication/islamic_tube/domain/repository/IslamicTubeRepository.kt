@@ -17,6 +17,8 @@ interface IslamicTubeRepository {
 
     suspend fun getSubCategoryFromLocal(categoryName: String): List<Video>
 
+    fun observeCategoryNamesAndFirstVideo(): Flow<Pair<List<Video>, List<String>>>
+
     fun observeCategoryNamesByVideoUrl(videoUrl: String): Flow<List<String>>
 
     suspend fun createEmptyCategory(categoryName: String)
