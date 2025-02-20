@@ -117,6 +117,7 @@ class DetailsViewModelTest {
             viewModel.state.test {
                 // The first emission is the initial state.
                 awaitItem()
+                awaitItem()
 
                 // Next emission: the final state with currentVideo, currentCategory, relatedVideos updated and isLoading false.
                 val finalState = awaitItem()

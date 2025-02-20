@@ -68,7 +68,7 @@ fun DetailsScreenRoot(
             DetailsIntent.LoadDataFromNetwork(selectedVideo, categoryName, subCategoryName)
         )
     } else {
-        viewModel.onIntent(DetailsIntent.LoadDataFromLocal(selectedVideo, categoryName))
+        viewModel.onIntent(DetailsIntent.LoadDataFromLocal(selectedVideo, subCategoryName))
     }
 
     val errorMessage by viewModel.errorMessage.collectAsState(initial = null)
@@ -79,8 +79,8 @@ fun DetailsScreenRoot(
     }
 
     val state = viewModel.state.collectAsState().value
-    DetailsScreen(modifier, state, viewModel::onIntent) { newVideo, cat ->
-        if (newVideo != selectedVideo) onVideoClick(newVideo, cat, subCategoryName)
+    DetailsScreen(modifier, state, viewModel::onIntent) { newVideo, currentCategory ->
+        if (newVideo != selectedVideo) onVideoClick(newVideo, categoryName, currentCategory)
     }
 }
 
