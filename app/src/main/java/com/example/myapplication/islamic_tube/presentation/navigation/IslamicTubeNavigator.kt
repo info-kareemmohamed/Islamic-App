@@ -22,6 +22,7 @@ import androidx.navigation.toRoute
 import com.example.myapplication.core.presentation.navigation.Routes
 import com.example.myapplication.islamic_tube.domain.model.Video
 import com.example.myapplication.islamic_tube.presentation.details.DetailsScreenRoot
+import com.example.myapplication.islamic_tube.presentation.favorite.FavoriteScreenRoot
 import com.example.myapplication.islamic_tube.presentation.home.HomeScreenRoot
 import kotlin.reflect.typeOf
 
@@ -31,14 +32,14 @@ fun NavGraphBuilder.islamicTubeNavigatorGraph() {
         startDestination = Routes.IslamicTubeNavigatorScreen
     ) {
         composable<Routes.IslamicTubeNavigatorScreen> {
-            NewsNavigator()
+            IslamicNavigator()
         }
     }
 }
 
 
 @Composable
-private fun NewsNavigator() {
+private fun IslamicNavigator() {
     val navController = rememberNavController()
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
 
@@ -122,7 +123,9 @@ private fun NewsNavigator() {
             }
 
             composable<Routes.FavoriteScreen> {
-                Box(modifier = Modifier.fillMaxSize())
+                FavoriteScreenRoot { selectedVideo, subCategoryName ->
+                    navController.navigate(Routes.DetailsScreen(selectedVideo, "", subCategoryName))
+                }
             }
 
             composable<Routes.DownloadScreen> {
