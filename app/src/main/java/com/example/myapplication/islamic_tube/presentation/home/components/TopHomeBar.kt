@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.R
+import com.example.myapplication.islamic_tube.presentation.common.IslamicTubeVideoPlayer
 
 
 @Composable
@@ -98,7 +99,13 @@ fun TopHomeBar(
             Spacer(modifier = Modifier.fillMaxHeight(0.15f))
 
             // TODO: Replace the hardcoded URL with a dynamic URL from the video API
-            IslamicTubeVideoPlayer("https://www.youtube.com/watch?v=Y1M6hJHHrjM")
+            IslamicTubeVideoPlayer(
+                modifier = Modifier
+                    .height(200.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 15.dp),
+                videoUrl = "https://www.youtube.com/watch?v=Y1M6hJHHrjM"
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
             content()

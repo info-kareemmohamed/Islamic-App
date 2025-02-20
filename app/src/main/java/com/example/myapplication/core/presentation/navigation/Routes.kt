@@ -1,5 +1,6 @@
 package com.example.myapplication.core.presentation.navigation
 
+import com.example.myapplication.islamic_tube.domain.model.Video
 import kotlinx.serialization.Serializable
 
 sealed interface Routes {
@@ -17,7 +18,7 @@ sealed interface Routes {
     data object SettingsScreen : Routes
 
     @Serializable
-    data object DetailsScreen : Routes
+    data class DetailsScreen(val video: Video, val categoryName: String, val subCategoryName: String) : Routes
 
     @Serializable
     data object LatestScreen : Routes

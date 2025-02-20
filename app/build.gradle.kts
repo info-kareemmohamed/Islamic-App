@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.devtools.ksp)
+
 
 }
 
@@ -63,4 +65,8 @@ dependencies {
     implementation(libs.coil.compose)
 
     implementation(libs.youtube.player)
+
+
+    implementation(libs.bundles.room)
+    ksp(libs.androidx.room.compiler)
 }

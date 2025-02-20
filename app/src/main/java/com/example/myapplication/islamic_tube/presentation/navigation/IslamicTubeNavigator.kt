@@ -18,8 +18,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
+import androidx.navigation.toRoute
 import com.example.myapplication.core.presentation.navigation.Routes
+import com.example.myapplication.islamic_tube.domain.model.Video
+import com.example.myapplication.islamic_tube.presentation.details.DetailsScreenRoot
 import com.example.myapplication.islamic_tube.presentation.home.HomeScreenRoot
+import kotlin.reflect.typeOf
 
 
 fun NavGraphBuilder.islamicTubeNavigatorGraph() {
@@ -69,22 +73,48 @@ private fun NewsNavigator() {
                     onItemClick = { route -> navigateToTab(navController, route.route) }
                 )
         }
-    ) { bottomPadding ->
+    ) { innerPadding ->
 
         NavHost(
             navController = navController,
             startDestination = Routes.HomeScreen,
-            modifier = Modifier.padding(bottom = bottomPadding.calculateBottomPadding()),
+            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
         ) {
             composable<Routes.HomeScreen> {
                 HomeScreenRoot(
                     notificationClick = {},
-                    searchClick = { navController.navigate(Routes.SearchScreen) }
+                    searchClick = { navController.navigate(Routes.SearchScreen) },
+                    videoClick = { video, categoryName, subCategoryName ->
+                        navController.navigate(
+                            Routes.DetailsScreen(
+                                video,
+                                categoryName,
+                                subCategoryName
+                            )
+                        )
+                    }
                 )
+
             }
 
-            composable<Routes.DetailsScreen> {
-                Box(modifier = Modifier.fillMaxSize())
+            composable<Routes.DetailsScreen>(
+                typeMap = mapOf(typeOf<Video>() to CustomNavType.VideoType)
+            ) {
+                val video = it.toRoute<Routes.DetailsScreen>().video
+                val categoryName = it.toRoute<Routes.DetailsScreen>().categoryName
+                val subCategoryName = it.toRoute<Routes.DetailsScreen>().subCategoryName
+
+                DetailsScreenRoot(
+                    modifier = Modifier.padding(innerPadding),
+                    selectedVideo = video,
+                    categoryName = categoryName,
+                    subCategoryName = subCategoryName,
+                ) { video, categoryName, subCategoryName ->
+                    navController.navigate(
+                        Routes.DetailsScreen(video, categoryName, subCategoryName)
+                    )
+                }
+
             }
 
             composable<Routes.LatestScreen> {

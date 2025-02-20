@@ -6,6 +6,16 @@
     <string name="home_screen_more">المزيد</string>
     <string name="home_screen_hadithText">حديث شريف</string>
 
+    <!--  Details Screen -->
+    <string name="details_screen_more_videos">المزيد من فيديوهات</string>
+    <string name="details_screen_create_new_list">انشئ قائمه جديده</string>
+    <string name="details_screen_create_new_list_message">قم بإنشاء قائمة جديدة</string>
+    <string name="details_screen_new_list_description">أنشئ قائمة جديدة لتنظيم مقاطع الفيديو المفضلة لديك، حتى تتمكن من الوصول إليها بسرعة</string>
+    <string name="details_screen_list_name">اسم القائمة</string>
+    <string name="details_screen_cancel">تراجع</string>
+    <string name="details_screen_add">اضافه</string>
+    <string name="details_screen_save_video_in">...حفظ فيديو في</string>
+
     <!--    IslamicTube Bottom Navigation-->
     <string name="bottom_navigation_home">الصفحه الرئسية</string>
     <string name="bottom_navigation_favorite">المفضلة</string>

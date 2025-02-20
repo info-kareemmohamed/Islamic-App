@@ -34,7 +34,7 @@ import com.example.myapplication.core.presentation.theme.ui.MyApplicationTheme
 import com.example.myapplication.islamic_tube.domain.model.Category
 import com.example.myapplication.islamic_tube.domain.model.SubCategory
 import com.example.myapplication.islamic_tube.domain.model.Video
-import com.example.myapplication.islamic_tube.presentation.common.IslamicVideoCard
+import com.example.myapplication.islamic_tube.presentation.home.components.HomeVideoCard
 import com.example.myapplication.islamic_tube.presentation.home.components.HomeHadithCard
 import com.example.myapplication.islamic_tube.presentation.home.components.HomeScreenShimmerEffect
 import com.example.myapplication.islamic_tube.presentation.home.components.TopHomeBar
@@ -44,6 +44,7 @@ import org.koin.androidx.compose.koinViewModel
 fun HomeScreenRoot(
     notificationClick: () -> Unit,
     searchClick: () -> Unit,
+    videoClick: (Video, String, String) -> Unit
 ) {
     val viewModel = koinViewModel<HomeViewModel>()
     HomeScreen(
@@ -51,7 +52,8 @@ fun HomeScreenRoot(
         categories = viewModel.categories.collectAsState().value,
         errorMessage = viewModel.errorMessage.collectAsState(initial = null).value,
         notificationClick = notificationClick,
-        searchClick = searchClick
+        searchClick = searchClick,
+        videoClick = videoClick
     )
 }
 
@@ -63,6 +65,7 @@ private fun HomeScreen(
     errorMessage: NetworkError?,
     notificationClick: () -> Unit,
     searchClick: () -> Unit,
+    videoClick: (Video, String, String) -> Unit
 ) {
 
     val context = LocalContext.current
@@ -142,11 +145,16 @@ private fun HomeScreen(
                                     items = subCategory.videos,
                                     key = { video -> video.url }
                                 ) { video ->
-                                    IslamicVideoCard(
+                                    HomeVideoCard(
                                         videoUrl = video.url,
                                         videoTitle = video.title,
                                         artistName = category.name,
-                                        onClick = { // TODO: Handle video click
+                                        onClick = {
+                                            videoClick(
+                                                video,
+                                                category.name,
+                                                subCategory.name
+                                            )
                                         }
                                     )
                                 }
@@ -214,7 +222,8 @@ fun HomeScreenPreview() {
             isLoading = false,
             errorMessage = null,
             notificationClick = {},
-            searchClick = {}
+            searchClick = {},
+            videoClick = { _, _, _ -> }
         )
     }
 }
