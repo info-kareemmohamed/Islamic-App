@@ -1,4 +1,4 @@
-package com.example.myapplication.islamic_tube.presentation
+package com.example.myapplication.islamic_tube.presentation.home
 
 import app.cash.turbine.test
 import com.example.TestCoroutineRule
@@ -6,7 +6,6 @@ import com.example.myapplication.core.domain.NetworkError
 import com.example.myapplication.core.domain.Result
 import com.example.myapplication.islamic_tube.domain.model.Category
 import com.example.myapplication.islamic_tube.domain.repository.IslamicTubeRepository
-import com.example.myapplication.islamic_tube.presentation.home.HomeViewModel
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
