@@ -65,7 +65,7 @@ class DetailsViewModel(
     private fun loadNetworkData(video: Video, categoryName: String, subCategoryName: String) =
         viewModelScope.launch {
             _state.update {
-                it.copy(currentVideo = video, currentCategory = categoryName, isLoading = true)
+                it.copy(currentVideo = video, currentCategory = subCategoryName, isLoading = true)
             }
 
             repo.getSubCategoryFromNetwork(categoryName, subCategoryName)
