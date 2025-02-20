@@ -12,14 +12,19 @@ koin = "3.5.3"
 composeBom = "2024.04.01"
 navigationCompose = "2.8.7"
 ktor = "3.0.3"
+roomRuntime = "2.6.1"
 serialization = "1.7.3"
 coilCompose = "2.7.0"
 mockk = "1.13.7"
 kotlinxCoroutinesTest = "1.9.0"
 turbine = "1.0.0"
+ksp="2.0.21-1.0.27"
 
 [libraries]
 
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 youtube-player = { module = "com.pierfrancescosoffritti.androidyoutubeplayer:core", version.ref = "core" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 
@@ -57,6 +62,7 @@ turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+devtools-ksp={id="com.google.devtools.ksp", version.ref="ksp"}
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}
@@ -110,4 +116,9 @@ ktor = [
     "ktor-client-content-negotiation",
     "ktor-client-logging",
     "ktor-serialization-kotlinx-json"
+]
+
+room = [
+    "androidx-room-ktx",
+    "androidx-room-runtime"
 ]
