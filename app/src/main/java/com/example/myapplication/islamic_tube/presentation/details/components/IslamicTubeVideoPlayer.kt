@@ -1,11 +1,8 @@
-package com.example.myapplication.islamic_tube.presentation.home.components
+package com.example.myapplication.islamic_tube.presentation.details.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -22,19 +19,18 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.myapplication.islamic_tube.presentation.util.extractYoutubeVideoId
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 
 @Composable
-fun IslamicTubeVideoPlayer(videoUrl: String) {
+fun IslamicTubeVideoPlayer(modifier: Modifier = Modifier, videoUrl: String) {
     val lifecycleOwner = LocalLifecycleOwner.current
     var isPlayerReady by remember { mutableStateOf(false) }
 
     ElevatedCard(
-        modifier = Modifier
-            .height(200.dp)
-            .fillMaxWidth()
-            .padding(horizontal = 15.dp),
+        modifier = modifier,
         shape = RoundedCornerShape(5.dp),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp)
     ) {
@@ -54,7 +50,17 @@ fun IslamicTubeVideoPlayer(videoUrl: String) {
                                 }
                                 isPlayerReady = true
                             }
-                        })
+
+                            override fun onError(
+                                youTubePlayer: YouTubePlayer,
+                                error: PlayerConstants.PlayerError
+                            ) {
+                                super.onError(youTubePlayer, error)
+                                //TODO Handle error
+                                isPlayerReady = true
+                            }
+                        }
+                        )
                     }
                     youTubePlayerView
                 }

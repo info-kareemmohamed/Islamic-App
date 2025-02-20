@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.islamic_tube.presentation.common.IslamicVideoCardShimmerEffect
 import com.example.myapplication.islamic_tube.presentation.common.shimmerEffect
 
 @Composable
@@ -30,7 +29,7 @@ fun HomeScreenShimmerEffect(rowIndex: Int) {
         reverseLayout = true
     ) {
         items(10) {
-            IslamicVideoCardShimmerEffect()
+            HomeVideoCardShimmerEffect()
         }
     }
 }

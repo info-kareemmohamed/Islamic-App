@@ -1,4 +1,4 @@
-package com.example.myapplication.islamic_tube.presentation.common
+package com.example.myapplication.islamic_tube.presentation.home.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,11 +16,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.R
+import com.example.myapplication.islamic_tube.presentation.common.VideoThumbnail
 import com.example.myapplication.islamic_tube.presentation.util.extractYoutubeVideoId
 
 
 @Composable
-fun IslamicVideoCard(
+fun HomeVideoCard(
     videoUrl: String,
     videoTitle: String,
     artistName: String,
