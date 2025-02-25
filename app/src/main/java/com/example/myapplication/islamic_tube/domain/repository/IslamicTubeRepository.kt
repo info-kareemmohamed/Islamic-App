@@ -13,7 +13,7 @@ interface IslamicTubeRepository {
     suspend fun getSubCategoryFromNetwork(
         categoryName: String,
         subCategoryName: String
-    ): Result<SubCategory, NetworkError>
+    ):  Result<SubCategory, NetworkError>
 
     suspend fun getSubCategoryFromLocal(categoryName: String): List<Video>
 
