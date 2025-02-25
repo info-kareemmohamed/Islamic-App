@@ -17,14 +17,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.R
 import com.example.myapplication.islamic_tube.presentation.common.VideoThumbnail
-import com.example.myapplication.islamic_tube.presentation.util.extractYoutubeVideoId
 
 
 @Composable
 fun HomeVideoCard(
-    videoUrl: String,
-    videoTitle: String,
-    artistName: String,
+    imageUrl: String,
+    title: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -34,33 +32,22 @@ fun HomeVideoCard(
             .width(160.dp)
             .clickable { onClick() }
     ) {
-        val videoId = videoUrl.extractYoutubeVideoId()
-        videoId?.let {
-            val thumbnailUrl = "https://img.youtube.com/vi/$it/0.jpg"
-            VideoThumbnail(
-                thumbnailUrl = thumbnailUrl,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-            )
-        }
+
+        VideoThumbnail(
+            thumbnailUrl = imageUrl,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+        )
+
         Text(
-            text = videoTitle,
+            text = title,
             modifier = Modifier.fillMaxWidth(),
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.End,
             color = colorResource(R.color.black),
             style = MaterialTheme.typography.bodyMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        Text(
-            text = artistName,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.End,
-            color = colorResource(R.color.slate_gray),
-            style = MaterialTheme.typography.bodySmall,
-            maxLines = 1,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
     }

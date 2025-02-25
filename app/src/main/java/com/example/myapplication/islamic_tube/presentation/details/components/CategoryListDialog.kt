@@ -25,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,9 +51,9 @@ fun CategoryListDialog(
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color.White
+                containerColor = colorResource(id = R.color.white),
             ),
-            border = BorderStroke(1.dp, Color.Gray),
+            border = BorderStroke(1.dp, colorResource(id = R.color.slate_gray)),
             elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
             modifier = Modifier
                 .fillMaxWidth()
@@ -107,6 +106,7 @@ fun CategoryListDialog(
                                     textAlign = TextAlign.End,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
+                                    color = colorResource(id = R.color.black)
                                 )
                                 Checkbox(
                                     checked = selectedItems.contains(item),
@@ -136,7 +136,7 @@ fun CategoryListDialog(
                         ) {
                         Text(
                             text = stringResource(R.string.details_screen_create_new_list),
-                            color = Color.White,
+                            color = colorResource(R.color.white),
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -150,7 +150,7 @@ fun CategoryListDialog(
                     ) {
                         Text(
                             text = stringResource(R.string.details_screen_add),
-                            color = Color.White,
+                            color = colorResource(R.color.white),
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -164,6 +164,7 @@ fun CategoryListDialog(
 
 
 @Preview
+@Preview(uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun CategoryListDialogPreview() {
     MyApplicationTheme {

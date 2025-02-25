@@ -185,6 +185,7 @@ private fun DetailsScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 15.dp),
             style = MaterialTheme.typography.bodyLarge,
+            color = colorResource(R.color.black),
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.End,
             textDecoration = TextDecoration.Underline
@@ -200,7 +201,8 @@ private fun DetailsScreen(
 }
 
 
-@Preview(showBackground = true)
+@Preview
+@Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun DetailsScreenPreview() {
     MyApplicationTheme {
