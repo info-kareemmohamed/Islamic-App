@@ -11,7 +11,8 @@ data class Video(
 @Serializable
 data class SubCategory(
     val name: String,
-    val videos: List<Video>
+    val videos: List<Video>,
+    val imageUrl: String
 )
 
 @Serializable

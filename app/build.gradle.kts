@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -11,6 +13,11 @@ plugins {
 android {
     namespace = "com.example.myapplication"
     compileSdk = 35
+
+    //To Load base url from local.properties file
+    val properties = Properties().apply {
+        load(rootProject.file("local.properties").inputStream())
+    }
 
     defaultConfig {
         applicationId = "com.example.myapplication"
@@ -30,6 +37,13 @@ android {
                 "proguard-rules.pro"
             )
         }
+        forEach {
+            it.buildConfigField(
+                "String",
+                "API_BASE_URL",
+                properties.getProperty("API_BASE_URL")
+            )
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -39,6 +53,7 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }
