@@ -1,5 +1,6 @@
 package com.example.myapplication.islamic_tube.presentation.home
 
+import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +25,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.R
@@ -34,9 +34,9 @@ import com.example.myapplication.core.presentation.theme.ui.MyApplicationTheme
 import com.example.myapplication.islamic_tube.domain.model.Category
 import com.example.myapplication.islamic_tube.domain.model.SubCategory
 import com.example.myapplication.islamic_tube.domain.model.Video
-import com.example.myapplication.islamic_tube.presentation.home.components.HomeVideoCard
 import com.example.myapplication.islamic_tube.presentation.home.components.HomeHadithCard
 import com.example.myapplication.islamic_tube.presentation.home.components.HomeScreenShimmerEffect
+import com.example.myapplication.islamic_tube.presentation.home.components.HomeVideoCard
 import com.example.myapplication.islamic_tube.presentation.home.components.TopHomeBar
 import org.koin.androidx.compose.koinViewModel
 
@@ -88,7 +88,7 @@ private fun HomeScreen(
             contentPadding = PaddingValues(10.dp)
         ) {
             if (isLoading) {
-                itemsIndexed(items = (0..4).toList()) { rowIndex, _ ->
+                itemsIndexed(items = (0..3).toList()) { rowIndex, _ ->
                     HomeScreenShimmerEffect(rowIndex)
                 }
             } else {
@@ -97,16 +97,6 @@ private fun HomeScreen(
                     key = { index, category -> category.name }
                 ) { index, category ->
 
-                    if (index == 1) {
-                        //TODO: Add Hadith
-                        HomeHadithCard(
-                            hadithText = "إنَّ العَبْدَ لَيَتَكَلَّمُ بالكَلِمَةِ مِن رِضْوانِ اللَّهِ، لا يُلْقِي لها بالًا، يَرْفَعُهُ اللَّهُ بها دَرَجاتٍ، وإنَّ العَبْدَ لَيَتَكَلَّمُ بالكَلِمَةِ مِن سَخَطِ اللَّهِ، لا يُلْقِي لها بالًا، يَهْوِي بها في جَهَنَّمَ.",
-                            narrator = "أبو هريرة",
-                            source = "صحيح البخاري",
-                            modifier = Modifier.padding(vertical = 5.dp)
-
-                        )
-                    }
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -127,38 +117,36 @@ private fun HomeScreen(
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
-                        category.subCategories.forEach { subCategory ->
-                            Text(
-                                text = subCategory.name,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth(),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = colorResource(R.color.black)
-                            )
-                            LazyRow(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(15.dp),
-                                contentPadding = PaddingValues(10.dp),
-                                reverseLayout = true
-                            ) {
-                                items(
-                                    items = subCategory.videos,
-                                    key = { video -> video.url }
-                                ) { video ->
-                                    HomeVideoCard(
-                                        videoUrl = video.url,
-                                        videoTitle = video.title,
-                                        artistName = category.name,
-                                        onClick = {
-                                            videoClick(
-                                                video,
-                                                category.name,
-                                                subCategory.name
-                                            )
-                                        }
-                                    )
-                                }
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(15.dp),
+                            contentPadding = PaddingValues(10.dp),
+                            reverseLayout = true
+                        ) {
+                            items(category.subCategories, key = { it.name }) { subCategory ->
+                                HomeVideoCard(
+                                    imageUrl = subCategory.imageUrl,
+                                    title = subCategory.name,
+                                    onClick = {
+                                        videoClick(
+                                            subCategory.videos.first(),
+                                            category.name,
+                                            subCategory.name
+                                        )
+                                    }
+                                )
                             }
+                        }
+
+                        if (index == 0) {
+                            //TODO: Add Hadith
+                            HomeHadithCard(
+                                hadithText = "إنَّ العَبْدَ لَيَتَكَلَّمُ بالكَلِمَةِ مِن رِضْوانِ اللَّهِ، لا يُلْقِي لها بالًا، يَرْفَعُهُ اللَّهُ بها دَرَجاتٍ، وإنَّ العَبْدَ لَيَتَكَلَّمُ بالكَلِمَةِ مِن سَخَطِ اللَّهِ، لا يُلْقِي لها بالًا، يَهْوِي بها في جَهَنَّمَ.",
+                                narrator = "أبو هريرة",
+                                source = "صحيح البخاري",
+                                modifier = Modifier.padding(vertical = 5.dp)
+
+                            )
                         }
                     }
                 }
@@ -168,7 +156,8 @@ private fun HomeScreen(
 }
 
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview
+@Preview(showBackground = true,  uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun HomeScreenPreview() {
     MyApplicationTheme {
@@ -178,6 +167,7 @@ fun HomeScreenPreview() {
                     name = "رمضان ٢٣",
                     subCategories = listOf(
                         SubCategory(
+                            imageUrl = "https://img.youtube.com/vi/cuPKuLxXttA/mqdefault.jpg",
                             name = "كل يوم آية",
                             videos = listOf(
                                 Video(
@@ -200,6 +190,7 @@ fun HomeScreenPreview() {
                     name = "تثبيت حفظ القران",
                     subCategories = listOf(
                         SubCategory(
+                            imageUrl = "https://img.youtube.com/vi/cuPKuLxXttA/mqdefault.jpg",
                             name = "جزء عم",
                             videos = listOf(
                                 Video(
