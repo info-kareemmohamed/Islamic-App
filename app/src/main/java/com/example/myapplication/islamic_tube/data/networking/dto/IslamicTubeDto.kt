@@ -3,20 +3,26 @@ package com.example.myapplication.islamic_tube.data.networking.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class VideoDto(
+data class IslamicTubeDto(
+    val sections: List<SectionDto>,
+    val items: List<ItemDto>
+)
+
+@Serializable
+data class SectionDto(
+    val title: String,
+    val categories: List<CategoryDto>
+)
+
+@Serializable
+data class CategoryDto(
     val title: String,
     val url: String
 )
 
 @Serializable
-data class SubCategoryDto(
-    val name: String,
-    val videos: List<VideoDto>
+data class ItemDto(
+    val title: String,
+    val url: String,
+    val category: String
 )
-
-@Serializable
-data class CategoryDto(
-    val name: String,
-    val subCategories: List<SubCategoryDto>
-)
-
