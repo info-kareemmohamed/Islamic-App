@@ -43,8 +43,8 @@ fun CreateCategoryDialog(
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            border = BorderStroke(1.dp, Color.Gray),
+            colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.white)),
+            border = BorderStroke(1.dp, colorResource(id = R.color.slate_gray)),
             elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
             modifier = Modifier
                 .fillMaxWidth()
@@ -90,8 +90,8 @@ fun CreateCategoryDialog(
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        focusedBorderColor = colorResource(id = R.color.olive_green),
+                        focusedLabelColor = colorResource(id = R.color.olive_green),
                     ),
                     singleLine = true,
                 )
@@ -121,7 +121,7 @@ fun CreateCategoryDialog(
                         border = BorderStroke(1.dp, colorResource(id = R.color.olive_green)),
                         colors = ButtonDefaults.outlinedButtonColors(
                             containerColor = colorResource(id = R.color.olive_green),
-                            contentColor = Color.White
+                            contentColor = colorResource(id = R.color.white)
                         )
                     ) {
                         Text(
@@ -138,6 +138,7 @@ fun CreateCategoryDialog(
 
 
 @Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun CreateCategoryDialogPreview() {
     CreateCategoryDialog(
