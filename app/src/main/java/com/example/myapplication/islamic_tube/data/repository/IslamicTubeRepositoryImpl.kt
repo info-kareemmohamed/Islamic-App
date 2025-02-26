@@ -6,14 +6,17 @@ import com.example.myapplication.core.domain.NetworkError
 import com.example.myapplication.core.domain.Result
 import com.example.myapplication.core.domain.map
 import com.example.myapplication.islamic_tube.data.local.CategoryDao
-import com.example.myapplication.islamic_tube.data.mappres.toCategories
-import com.example.myapplication.islamic_tube.data.mappres.toVideo
+import com.example.myapplication.islamic_tube.data.mappres.toPlaylist
+import com.example.myapplication.islamic_tube.data.mappres.toPlaylists
+import com.example.myapplication.islamic_tube.data.mappres.toSections
 import com.example.myapplication.islamic_tube.data.mappres.toVideoEntity
 import com.example.myapplication.islamic_tube.data.networking.dto.IslamicTubeDto
 import com.example.myapplication.islamic_tube.domain.model.Category
-import com.example.myapplication.islamic_tube.domain.model.SubCategory
+import com.example.myapplication.islamic_tube.domain.model.Playlist
+import com.example.myapplication.islamic_tube.domain.model.Section
 import com.example.myapplication.islamic_tube.domain.model.Video
 import com.example.myapplication.islamic_tube.domain.repository.IslamicTubeRepository
+import com.example.myapplication.islamic_tube.presentation.util.extractYoutubeVideoId
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import kotlinx.coroutines.flow.Flow
@@ -23,39 +26,56 @@ class IslamicTubeRepositoryImpl(
     private val httpClient: HttpClient,
     private val categoryDao: CategoryDao,
 ) : IslamicTubeRepository {
-    val categories = mutableListOf<Category>()
+    val sections = mutableListOf<Section>()
+    val playlists = mutableListOf<Playlist>()
 
-    override suspend fun getIslamicTubeVideos(): Result<List<Category>, NetworkError> {
+    override suspend fun getSections(): Result<List<Section>, NetworkError> {
         val result = safeCall<IslamicTubeDto> {
             httpClient.get(urlString = BuildConfig.API_BASE_URL)
         }
         return result.map { dto ->
-            val categoriesList = dto.toCategories()
-            categories.clear()
-            categories.addAll(categoriesList)
-            categoriesList
+            val sectionsList = dto.toSections()
+            val playlistsList = dto.toPlaylists()
+            sections.apply {
+                clear()
+                addAll(sectionsList)
+            }
+            playlists.apply {
+                clear()
+                addAll(playlistsList)
+            }
+            sectionsList
         }
     }
 
-    override suspend fun getSubCategoryFromNetwork(
-        categoryName: String,
-        subCategoryName: String
-    ): Result<SubCategory, NetworkError> =
-        categories.find { it.name == categoryName }
-            ?.subCategories?.find { it.name == subCategoryName }
+    override suspend fun getPlaylist(
+        playlistName: String
+    ): Result<Playlist, NetworkError> =
+        playlists.find { it.name == playlistName }?.let { Result.Success(it) }
+            ?: Result.Error(NetworkError.UNKNOWN)
+
+    override suspend fun searchCategoryList(query: String): Result<List<Category>, NetworkError> =
+        sections.flatMap { section ->
+            section.categories.filter { category ->
+                category.name.contains(query, ignoreCase = true)
+            }
+        }.takeIf { it.isNotEmpty() }
             ?.let { Result.Success(it) }
             ?: Result.Error(NetworkError.UNKNOWN)
 
+    override fun observePlaylistFromLocal(playlistName: String): Flow<Playlist> =
+        categoryDao.observeCategoryByName(playlistName).map {
+            it?.toPlaylist() ?: Playlist("", emptyList())
+        }
 
-    override suspend fun getSubCategoryFromLocal(categoryName: String): List<Video> =
-        categoryDao.getCategoryByName(categoryName)?.videoEntities?.map { it.toVideo() }
-            ?: emptyList()
 
-    override fun observeCategoryNamesAndFirstVideo(): Flow<Pair<List<Video>, List<String>>> =
-        categoryDao.observeCategoryNameAndFirstVideo().map { list ->
-            val names = list.map { it.name }
-            val videos = list.map { it.firstVideo.toVideo() }
-            videos to names
+    override fun observeCategoryList(): Flow<List<Category>> =
+        categoryDao.observeCategorySummaries().map { summaries ->
+            summaries.map { summary ->
+                val imageUrl = summary.lastSavedVideoUrl.extractYoutubeVideoId()
+                    ?.let { "https://img.youtube.com/vi/$it/0.jpg" } ?: ""
+                Category(name = summary.name, imageUrl = imageUrl)
+            }
         }
 
     override fun observeCategoryNamesByVideoUrl(videoUrl: String): Flow<List<String>> =

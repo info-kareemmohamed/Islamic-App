@@ -14,6 +14,9 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE name = :name")
     suspend fun getCategoryByName(name: String): CategoryEntity?
 
+    @Query("SELECT * FROM categories WHERE name = :name")
+    fun observeCategoryByName(name: String): Flow<CategoryEntity?>
+
     @Query("SELECT name FROM categories WHERE videoEntities LIKE '%' || :videoUrl || '%'")
     fun observeCategoryNamesByVideoUrl(videoUrl: String): Flow<List<String>>
 
@@ -28,17 +31,23 @@ interface CategoryDao {
 
     @Query(
         """
-    SELECT name, json_extract(videoEntities, '$[0]') as firstVideo 
+    SELECT name, 
+           json_extract(videoEntities, '$[' || (json_array_length(videoEntities) - 1) || '].url') AS lastSavedVideoUrl
     FROM categories
     WHERE json_array_length(videoEntities) > 0
     """
     )
-    fun observeCategoryNameAndFirstVideo(): Flow<List<CategoryNameAndFirstVideoUrl>>
+    fun observeCategorySummaries(): Flow<List<CategorySummaryEntity>>
 
 
     @Transaction
     suspend fun createCategoryIfNotExists(categoryName: String) {
-        getCategoryByName(categoryName) ?: upsertCategory(CategoryEntity(categoryName, emptyList()))
+        getCategoryByName(categoryName) ?: upsertCategory(
+            CategoryEntity(
+                categoryName, "",
+                emptyList()
+            )
+        )
     }
 
     @Transaction
@@ -54,8 +63,15 @@ interface CategoryDao {
         newCategoryNames.forEach { categoryName ->
             val category = getCategoryByName(categoryName)
             upsertCategory(
-                category?.copy(videoEntities = category.videoEntities + videoEntity)
-                    ?: CategoryEntity(name = categoryName, videoEntities = listOf(videoEntity))
+                category?.copy(
+                    videoEntities = category.videoEntities + videoEntity,
+                    lastSavedVideoUrl = videoEntity.url
+                )
+                    ?: CategoryEntity(
+                        name = categoryName,
+                        videoEntities = listOf(videoEntity),
+                        lastSavedVideoUrl = videoEntity.url
+                    )
             )
         }
     }

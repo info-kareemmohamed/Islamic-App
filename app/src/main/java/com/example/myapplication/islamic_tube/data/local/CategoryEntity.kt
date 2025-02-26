@@ -5,9 +5,9 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
 
-data class CategoryNameAndFirstVideoUrl(
+data class CategorySummaryEntity(
     val name: String,
-    val firstVideo: VideoEntity
+    val lastSavedVideoUrl: String
 )
 
 @Serializable
@@ -20,5 +20,6 @@ data class VideoEntity(
 data class CategoryEntity(
     @PrimaryKey
     val name: String,
+    val lastSavedVideoUrl: String,
     val videoEntities: List<VideoEntity>
 )
