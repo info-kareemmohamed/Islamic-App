@@ -3,7 +3,7 @@ package com.example.myapplication.islamic_tube.presentation.details
 import app.cash.turbine.test
 import com.example.TestCoroutineRule
 import com.example.myapplication.core.domain.Result
-import com.example.myapplication.islamic_tube.domain.model.SubCategory
+import com.example.myapplication.islamic_tube.domain.model.Playlist
 import com.example.myapplication.islamic_tube.domain.model.Video
 import com.example.myapplication.islamic_tube.domain.repository.IslamicTubeRepository
 import com.example.myapplication.islamic_tube.presentation.details.mvi.DetailsIntent
@@ -35,124 +35,103 @@ class DetailsViewModelTest {
     fun setup() {
         // GIVEN: a mocked repository and initial state
         repo = mockk(relaxed = true)
-        // Stub observeCategoryNames() to return an empty list for simplicity
+        // Stub global category names to return an empty list for simplicity
         every { repo.observeCategoryNames() } returns flowOf(emptyList())
         viewModel = DetailsViewModel(repo)
     }
 
     @Test
-    fun `given successful network response when LoadDataFromNetwork intent sent then state is updated`() =
-        runTest {
-            // GIVEN: test video, category, subcategory, and expected related videos.
-            val testVideo = Video(title = "Test Video", url = "http://test.com/video")
-            val categoryName = "TestCategory"
-            val subCategoryName = "SubCategory"
-            val expectedVideos =
-                listOf(Video(title = "Related 1", url = "http://test.com/related1"))
-            val dummySubCategory = SubCategory(videos = expectedVideos, name = subCategoryName)
-
-            // Stub network call to return success and stub video URL observation.
-            coEvery {
-                repo.getSubCategoryFromNetwork(
-                    categoryName,
-                    subCategoryName
-                )
-            } returns Result.Success(dummySubCategory)
-            coEvery { repo.observeCategoryNamesByVideoUrl(testVideo.url) } returns flowOf(
-                listOf(
-                    "Category1",
-                    "Category2"
-                )
+    fun `when network playlist is loaded then state is updated`() = runTest {
+        // GIVEN: a test playlist with a first video
+        val firstVideo = Video(title = "First Video", url = "http://test.com/first")
+        val testPlaylist = Playlist(
+            name = "TestPlaylist",
+            videos = listOf(
+                firstVideo,
+                Video(title = "Second Video", url = "http://test.com/second")
             )
+        )
+        // Stub network call to return success for the playlist
+        coEvery { repo.getPlaylist("TestPlaylist") } returns Result.Success(testPlaylist)
 
-            // WHEN: LoadDataFromNetwork intent is sent.
-            viewModel.onIntent(
-                DetailsIntent.LoadDataFromNetwork(
-                    testVideo,
-                    categoryName,
-                    subCategoryName
-                )
+        // WHEN: a LoadPlaylist intent is sent for network load (isFromFavorite = false)
+        viewModel.onIntent(
+            DetailsIntent.LoadPlaylist(
+                isFromFavorite = false,
+                playlistName = "TestPlaylist"
             )
+        )
 
-            // THEN: Verify state updates using Turbine.
-            viewModel.state.test {
-                // First emission: initial state.
-                awaitItem()
-                // Next: loading state with currentVideo, currentCategory set and isLoading true.
-                val loadingState = awaitItem()
-                check(loadingState.currentVideo == testVideo)
-                check(loadingState.currentCategory == categoryName)
-                check(loadingState.isLoading)
-
-                // Next: success state with relatedVideos updated and isLoading false.
-                val successState = awaitItem()
-                check(successState.relatedVideos == expectedVideos)
-                check(!successState.isLoading)
-
-                // Finally: state with updated videoCategoryNames and currentVideo.
-                val finalState = awaitItem()
-                check(finalState.videoCategoryNames == listOf("Category1", "Category2"))
-                check(finalState.currentVideo == testVideo)
-
-                cancelAndConsumeRemainingEvents()
-            }
+        // THEN: state should be updated with the test playlist and currentVideo set to the first video
+        viewModel.state.test {
+            // First emission: initial state
+            awaitItem()
+            awaitItem()
+            // Next emission: state after loading
+            val stateAfterLoad = awaitItem()
+            assertEquals(testPlaylist, stateAfterLoad.playlist)
+            assertEquals(firstVideo, stateAfterLoad.currentVideo)
+            assertFalse(stateAfterLoad.isLoading)
+            cancelAndConsumeRemainingEvents()
         }
+    }
 
     @Test
-    fun `given local data when LoadDataFromLocal intent is sent then final state updates with related videos`() =
-        runTest {
-            // GIVEN: a test video, category name, and expected related videos.
-            val testVideo = Video(title = "Test Video", url = "http://test.com/video")
-            val categoryName = "LocalCategory"
-            val expectedRelatedVideos = listOf(
-                Video(title = "Local Related", url = "http://test.com/localrelated")
+    fun `when local playlist is loaded then state is updated`() = runTest {
+        // GIVEN: a test local playlist with a first video
+        val firstVideo = Video(title = "Local First Video", url = "http://test.com/localfirst")
+        val testPlaylist = Playlist(
+            name = "LocalPlaylist",
+            videos = listOf(
+                firstVideo,
+                Video(title = "Local Second Video", url = "http://test.com/localsecond")
             )
-            // Stub the repository call to return expected related videos.
-            coEvery { repo.getSubCategoryFromLocal(categoryName) } returns expectedRelatedVideos
+        )
+        // Stub local call to return the test playlist as a Flow
+        coEvery { repo.observePlaylistFromLocal("LocalPlaylist") } returns flowOf(testPlaylist)
 
-            // WHEN: the LoadDataFromLocal intent is sent.
-            viewModel.onIntent(DetailsIntent.LoadDataFromLocal(testVideo, categoryName))
+        // WHEN: a LoadPlaylist intent is sent for local load (isFromFavorite = true)
+        viewModel.onIntent(
+            DetailsIntent.LoadPlaylist(
+                isFromFavorite = true,
+                playlistName = "LocalPlaylist"
+            )
+        )
 
-            // THEN: verify that the final state reflects the loaded data.
-            viewModel.state.test {
-                // The first emission is the initial state.
-                awaitItem()
-                awaitItem()
-
-                // Next emission: the final state with currentVideo, currentCategory, relatedVideos updated and isLoading false.
-                val finalState = awaitItem()
-                // Check that the final state matches our expectations.
-                assertEquals(testVideo, finalState.currentVideo)
-                assertEquals(categoryName, finalState.currentCategory)
-                assertEquals(expectedRelatedVideos, finalState.relatedVideos)
-                assertFalse(finalState.isLoading)
-
-                cancelAndConsumeRemainingEvents()
-            }
+        // THEN: state should be updated with the test playlist and currentVideo set to the first video (if not already set)
+        viewModel.state.test {
+            // First emission: initial state
+            awaitItem()
+            awaitItem()
+            // Next emission: state after loading
+            val stateAfterLoad = awaitItem()
+            assertEquals(testPlaylist, stateAfterLoad.playlist)
+            // If currentVideo was not set before, it should be updated to firstVideo
+            assertEquals(firstVideo, stateAfterLoad.currentVideo)
+            assertFalse(stateAfterLoad.isLoading)
+            cancelAndConsumeRemainingEvents()
         }
+    }
 
     @Test
-    fun `given SaveVideo intent when processed then repository upsertVideoCategories is called with correct parameters`() =
+    fun `when SaveVideo intent is processed then repository upsertVideoCategories is called`() =
         runTest {
-            // GIVEN: a test video and a list of new category names.
+            // GIVEN: a test video and a new category list; set currentVideo to the test video
             val testVideo = Video(title = "Test Video", url = "http://test.com/video")
+            viewModel.onIntent(DetailsIntent.ClickVideo(testVideo))
             val newCategories = listOf("Cat1", "Cat2")
 
-            // The initial state's videoCategoryNames is empty by default.
-            // WHEN: The SaveVideo intent is sent.
-            viewModel.onIntent(DetailsIntent.SaveVideo(testVideo, newCategories))
-
-            // Ensure that the coroutine launched in saveVideo() completes.
+            // WHEN: a SaveVideo intent is sent
+            viewModel.onIntent(DetailsIntent.SaveVideo(newCategories))
             advanceUntilIdle()
 
-            // THEN: Verify that the repository method is called with the correct parameters.
+            // THEN: verify that repository.upsertVideoCategories is called with correct parameters
             coVerify {
                 repo.upsertVideoCategories(
                     newCategoryNames = newCategories,
                     video = testVideo,
-                    oldCategoryNames = emptyList() // from initial state
+                    oldCategoryNames = emptyList() // initial state's videoCategoryNames is empty
                 )
             }
         }
 }
-

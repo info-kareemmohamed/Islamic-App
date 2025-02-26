@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.example.myapplication.R
 import com.example.myapplication.core.presentation.asUiText
 import com.example.myapplication.core.presentation.theme.ui.MyApplicationTheme
+import com.example.myapplication.islamic_tube.domain.model.Playlist
 import com.example.myapplication.islamic_tube.domain.model.Video
 import com.example.myapplication.islamic_tube.presentation.common.IslamicListVideos
 import com.example.myapplication.islamic_tube.presentation.common.IslamicTubeVideoPlayer
@@ -49,26 +50,13 @@ import org.koin.androidx.compose.koinViewModel
 fun DetailsScreenRoot(
     modifier: Modifier = Modifier,
     viewModel: DetailsViewModel = koinViewModel(),
-    selectedVideo: Video,
-    categoryName: String,
-    subCategoryName: String,
-    onVideoClick: (video: Video, category: String, subCategory: String) -> Unit,
+    playlistName: String,
+    isFromFavorite: Boolean
 ) {
     val context = LocalContext.current
 
-    /*
-  * To determine the data source (local storage or network), I will check the `categoryName`:
-  * - If `categoryName` is **not empty**, it means the request is coming from the **home screen**,
-  *   so I will fetch data from the **network**.
-  * - If `categoryName` is **empty**, it means the request is coming from the **favorites screen**,
-  *   so I will fetch data from the **local storage**.
-  */
-    if (categoryName.isNotEmpty()) {
-        viewModel.onIntent(
-            DetailsIntent.LoadDataFromNetwork(selectedVideo, categoryName, subCategoryName)
-        )
-    } else {
-        viewModel.onIntent(DetailsIntent.LoadDataFromLocal(selectedVideo, subCategoryName))
+    LaunchedEffect(playlistName) {
+        viewModel.onIntent(DetailsIntent.LoadPlaylist(isFromFavorite, playlistName))
     }
 
     val errorMessage by viewModel.errorMessage.collectAsState(initial = null)
@@ -79,17 +67,14 @@ fun DetailsScreenRoot(
     }
 
     val state = viewModel.state.collectAsState().value
-    DetailsScreen(modifier, state, viewModel::onIntent) { newVideo, currentCategory ->
-        if (newVideo != selectedVideo) onVideoClick(newVideo, categoryName, currentCategory)
-    }
+    DetailsScreen(modifier, state, viewModel::onIntent)
 }
 
 @Composable
 private fun DetailsScreen(
     modifier: Modifier = Modifier,
     state: DetailsState,
-    onEvent: (DetailsIntent) -> Unit,
-    onVideoClick: (video: Video, category: String) -> Unit,
+    onIntent: (DetailsIntent) -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -97,23 +82,16 @@ private fun DetailsScreen(
         CategoryListDialog(
             items = state.savedCategoryNames,
             initialSelectedItems = state.videoCategoryNames.toSet(),
-            onDismissRequest = { onEvent(DetailsIntent.ToggleCategoryListDialog(false)) },
-            onSelectedItems = { items ->
-                onEvent(
-                    DetailsIntent.SaveVideo(
-                        state.currentVideo,
-                        items
-                    )
-                )
-            },
-            onCreateNewCategory = { onEvent(DetailsIntent.ToggleCreateCategoryDialog(true)) }
+            onDismissRequest = { onIntent(DetailsIntent.ToggleCategoryListDialog(false)) },
+            onSelectedItems = { items -> onIntent(DetailsIntent.SaveVideo(items)) },
+            onCreateNewCategory = { onIntent(DetailsIntent.ToggleCreateCategoryDialog(true)) }
         )
     }
 
     if (state.isCreateCategoryDialogVisible) {
         CreateCategoryDialog(
-            onDismissRequest = { onEvent(DetailsIntent.ToggleCreateCategoryDialog(false)) },
-            onConfirm = { onEvent(DetailsIntent.CreateCategory(it)) }
+            onDismissRequest = { onIntent(DetailsIntent.ToggleCreateCategoryDialog(false)) },
+            onConfirm = { onIntent(DetailsIntent.CreateCategory(it)) }
         )
     }
 
@@ -149,13 +127,13 @@ private fun DetailsScreen(
                     modifier = Modifier
                         .size(30.dp)
                         .clickable {
-                            onEvent(DetailsIntent.ToggleCategoryListDialog(!state.isCategoryListDialogVisible))
+                            onIntent(DetailsIntent.ToggleCategoryListDialog(!state.isCategoryListDialogVisible))
                         },
                     painter = painterResource(
                         id = if (state.videoCategoryNames.isEmpty()) R.drawable.ic_save_false
                         else R.drawable.ic_save_true
                     ),
-                    contentDescription = "",
+                    contentDescription = "Save icon",
                     tint = colorResource(R.color.slate_gray)
                 )
                 Icon(
@@ -169,12 +147,12 @@ private fun DetailsScreen(
                             context.startActivity(Intent.createChooser(shareIntent, "Share via"))
                         },
                     imageVector = Icons.Default.Share,
-                    contentDescription = "",
+                    contentDescription = "Share icon",
                     tint = colorResource(R.color.slate_gray)
                 )
             }
             Text(
-                text = state.currentCategory,
+                text = state.playlist.name,
                 style = MaterialTheme.typography.bodyLarge,
                 color = colorResource(R.color.slate_gray)
             )
@@ -193,8 +171,9 @@ private fun DetailsScreen(
         if (state.isLoading) {
             IslamicVideoCardListShimmerEffect()
         } else {
-            IslamicListVideos(relatedVideos = state.relatedVideos) { video ->
-                onVideoClick(video, state.currentCategory)
+            IslamicListVideos(relatedVideos = state.playlist.videos) { video ->
+                if (video != state.currentVideo)
+                    onIntent(DetailsIntent.ClickVideo(video))
             }
         }
     }
@@ -208,30 +187,33 @@ fun DetailsScreenPreview() {
     MyApplicationTheme {
         DetailsScreen(
             state = DetailsState(
-                relatedVideos = listOf(
-                    Video(
-                        title = "تثبيت وتربيط و تدبر سورة الزلزلة",
-                        url = "https://www.youtube.com/watch?v=AsFhMZE5o1U&list=PL0146TQmugPBpIPL1OLqf6zQ3qeVrWCnY&index=22&pp=iAQB"
-                    ),
-                    Video(
-                        title = "تثبيت وتربيط و تدبر سورة العاديات",
-                        url = "https://www.youtube.com/watch?v=zLStmjf3Xww&list=PL0146TQmugPBpIPL1OLqf6zQ3qeVrWCnY&index=23&pp=iAQB"
-                    ),
-                    Video(
-                        title = "تثبيت وتربيط و تدبر سورة القارعة",
-                        url = "https://www.youtube.com/watch?v=E12ENYhmd2s&list=PL0146TQmugPBpIPL1OLqf6zQ3qeVrWCnY&index=24&pp=iAQB"
+                playlist = Playlist(
+                    name = "المفضلة",
+                    videos =
 
-                    ),
-                    Video(
-                        title = "تثبيت وتربيط و تدبر سورة الزلزلة",
-                        url = "https://www.youtube.com/watch?v=AsFhMZE5o1U&list=PL0146TQmugPBpIPL1OLqf6zQ3qeVrWCnY&index=22&pp=iAQB"
-                    ),
+                    listOf(
+                        Video(
+                            title = "تثبيت وتربيط و تدبر سورة الزلزلة",
+                            url = "https://www.youtube.com/watch?v=AsFhMZE5o1U&list=PL0146TQmugPBpIPL1OLqf6zQ3qeVrWCnY&index=22&pp=iAQB"
+                        ),
+                        Video(
+                            title = "تثبيت وتربيط و تدبر سورة العاديات",
+                            url = "https://www.youtube.com/watch?v=zLStmjf3Xww&list=PL0146TQmugPBpIPL1OLqf6zQ3qeVrWCnY&index=23&pp=iAQB"
+                        ),
+                        Video(
+                            title = "تثبيت وتربيط و تدبر سورة القارعة",
+                            url = "https://www.youtube.com/watch?v=E12ENYhmd2s&list=PL0146TQmugPBpIPL1OLqf6zQ3qeVrWCnY&index=24&pp=iAQB"
+
+                        ),
+                        Video(
+                            title = "تثبيت وتربيط و تدبر سورة الزلزلة",
+                            url = "https://www.youtube.com/watch?v=AsFhMZE5o1U&list=PL0146TQmugPBpIPL1OLqf6zQ3qeVrWCnY&index=22&pp=iAQB"
+                        ),
+                    )
                 )
             ),
-            onEvent = { },
-        ) { _, _ ->
-
-        }
+            onIntent = { },
+        )
 
     }
 }

@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.myapplication.core.domain.NetworkError
 import com.example.myapplication.core.domain.onError
 import com.example.myapplication.core.domain.onSuccess
-import com.example.myapplication.islamic_tube.domain.model.Category
+import com.example.myapplication.islamic_tube.domain.model.Section
 import com.example.myapplication.islamic_tube.domain.repository.IslamicTubeRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,8 +25,8 @@ class HomeViewModel(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _categories = MutableStateFlow<List<Category>>(emptyList())
-    val categories: StateFlow<List<Category>> = _categories
+    private val _categories = MutableStateFlow<List<Section>>(emptyList())
+    val categories: StateFlow<List<Section>> = _categories
         .onStart { loadIslamicTubeVideos() }
         .stateIn(
             scope = viewModelScope,
@@ -41,7 +41,7 @@ class HomeViewModel(
         viewModelScope.launch {
             _isLoading.value = true
 
-            islamicTubeRepository.getIslamicTubeVideos()
+            islamicTubeRepository.getSections()
                 .onSuccess { categories ->
                     _categories.update { categories }
                     _isLoading.value = false

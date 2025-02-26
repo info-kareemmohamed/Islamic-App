@@ -18,8 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,33 +31,27 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.myapplication.R
 import com.example.myapplication.core.presentation.theme.ui.MyApplicationTheme
-import com.example.myapplication.islamic_tube.domain.model.Video
+import com.example.myapplication.islamic_tube.domain.model.Category
 import com.example.myapplication.islamic_tube.presentation.common.VideoThumbnail
-import com.example.myapplication.islamic_tube.presentation.util.extractYoutubeVideoId
 import org.koin.androidx.compose.koinViewModel
 
 
 @Composable
 fun FavoriteScreenRoot(
     viewModel: FavoriteViewModel = koinViewModel<FavoriteViewModel>(),
-    onClick: (selectedVideo: Video, subCategoryName: String) -> Unit
+    onClick: (playlistName: String) -> Unit
 ) {
     val categories by viewModel.categories.collectAsStateWithLifecycle()
 
-    FavoriteScreen(
-        categories = categories,
-    ) { selectedVideo, subCategoryName ->
-        onClick(selectedVideo, subCategoryName)
-    }
-
+    FavoriteScreen(categories = categories, onClick = onClick)
 }
 
 
 @Composable
 fun FavoriteScreen(
-    categories: Pair<List<Video>, List<String>>,
+    categories: List<Category>,
     modifier: Modifier = Modifier,
-    onClick: (selectedVideo: Video, subCategoryName: String) -> Unit
+    onClick: (playlistName: String) -> Unit
 ) {
 
     Column(
@@ -77,8 +69,6 @@ fun FavoriteScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-
-
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.End,
@@ -86,7 +76,7 @@ fun FavoriteScreen(
             contentPadding = PaddingValues(5.dp)
         ) {
 
-            items(categories.first.size) { index ->
+            items(categories.size) { index ->
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp, alignment = Alignment.End),
@@ -94,11 +84,11 @@ fun FavoriteScreen(
                     modifier = modifier
                         .fillMaxWidth()
                         .clickable {
-                            onClick(categories.first[index], categories.second[index])
+                            onClick(categories[index].name)
                         }
                 ) {
                     Text(
-                        text = categories.second[index],
+                        text = categories[index].name,
                         modifier = Modifier.weight(1f),
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.End,
@@ -108,32 +98,26 @@ fun FavoriteScreen(
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    val videoId by remember { mutableStateOf(categories.first[index].url.extractYoutubeVideoId()) }
-                    videoId?.let {
-                        val thumbnailUrl = "https://img.youtube.com/vi/$it/0.jpg"
-                        VideoThumbnail(
-                            thumbnailUrl = thumbnailUrl,
-                            modifier = Modifier
-                                .width(170.dp)
-                                .height(120.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                        )
-                    }
+                    VideoThumbnail(
+                        thumbnailUrl = categories[index].imageUrl,
+                        modifier = Modifier
+                            .width(170.dp)
+                            .height(120.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                    )
                 }
             }
         }
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun FavoriteScreenPreview() {
     MyApplicationTheme {
         FavoriteScreen(
-            categories = Pair(
-                emptyList(),
-                emptyList()
-            )
-        ) { _, _ -> }
+            categories = emptyList()
+        ) { _ -> }
     }
 }

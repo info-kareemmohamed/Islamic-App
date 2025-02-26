@@ -25,51 +25,58 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.Abs
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 
 @Composable
-fun IslamicTubeVideoPlayer(modifier: Modifier = Modifier, videoUrl: String) {
+fun IslamicTubeVideoPlayer(
+    modifier: Modifier = Modifier,
+    videoUrl: String
+) {
     val lifecycleOwner = LocalLifecycleOwner.current
     var isPlayerReady by remember { mutableStateOf(false) }
+    var youTubePlayer by remember { mutableStateOf<YouTubePlayer?>(null) }
 
     ElevatedCard(
         modifier = modifier,
         shape = RoundedCornerShape(5.dp),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 5.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize()) {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
-                factory = { ctx ->
+                factory = { context ->
                     // Create and configure the YouTubePlayerView
-                    val youTubePlayerView = YouTubePlayerView(ctx).apply {
-                        // Attach the lifecycle observer to manage lifecycle events automatically
+                    YouTubePlayerView(context).apply {
                         lifecycleOwner.lifecycle.addObserver(this)
-                        // Add a listener to load the YouTube video when the player is ready
                         addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
-                            override fun onReady(youTubePlayer: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer) {
-                                videoUrl.extractYoutubeVideoId()?.let { videoId ->
-                                    youTubePlayer.cueVideo(videoId, 0f)
+                            override fun onReady(player: YouTubePlayer) {
+                                youTubePlayer = player
+                                videoUrl.extractYoutubeVideoId()?.let { id ->
+                                    player.cueVideo(id, 0f)
                                 }
                                 isPlayerReady = true
                             }
 
                             override fun onError(
-                                youTubePlayer: YouTubePlayer,
+                                player: YouTubePlayer,
                                 error: PlayerConstants.PlayerError
                             ) {
-                                super.onError(youTubePlayer, error)
-                                //TODO Handle error
+                                // Optional: handle error here
                                 isPlayerReady = true
                             }
-                        }
-                        )
+                        })
                     }
-                    youTubePlayerView
+                },
+                update = {
+                    // Update the video when videoUrl changes and the player is ready
+                    if (isPlayerReady) {
+                        videoUrl.extractYoutubeVideoId()?.let { id ->
+                            youTubePlayer?.cueVideo(id, 0f)
+                        }
+                    }
                 }
             )
-
-            // Show a loading indicator until the video player is ready
             if (!isPlayerReady) {
+                // Show a loading indicator until the player is ready
                 Box(
-                    modifier = Modifier
+                    Modifier
                         .fillMaxSize()
                         .background(Color.Black),
                     contentAlignment = Alignment.Center
@@ -80,3 +87,4 @@ fun IslamicTubeVideoPlayer(modifier: Modifier = Modifier, videoUrl: String) {
         }
     }
 }
+

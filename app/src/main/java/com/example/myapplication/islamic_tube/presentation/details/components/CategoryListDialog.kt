@@ -19,6 +19,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +47,9 @@ fun CategoryListDialog(
     onCreateNewCategory: () -> Unit
 ) {
     var selectedItems by remember { mutableStateOf(initialSelectedItems) }
+
+    LaunchedEffect(initialSelectedItems) { selectedItems = initialSelectedItems }
+
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(

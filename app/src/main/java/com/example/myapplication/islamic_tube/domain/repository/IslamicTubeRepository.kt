@@ -3,21 +3,21 @@ package com.example.myapplication.islamic_tube.domain.repository
 import com.example.myapplication.core.domain.NetworkError
 import com.example.myapplication.core.domain.Result
 import com.example.myapplication.islamic_tube.domain.model.Category
-import com.example.myapplication.islamic_tube.domain.model.SubCategory
+import com.example.myapplication.islamic_tube.domain.model.Playlist
+import com.example.myapplication.islamic_tube.domain.model.Section
 import com.example.myapplication.islamic_tube.domain.model.Video
 import kotlinx.coroutines.flow.Flow
 
 interface IslamicTubeRepository {
-    suspend fun getIslamicTubeVideos(): Result<List<Category>, NetworkError>
+    suspend fun getSections(): Result<List<Section>, NetworkError>
 
-    suspend fun getSubCategoryFromNetwork(
-        categoryName: String,
-        subCategoryName: String
-    ):  Result<SubCategory, NetworkError>
+    suspend fun getPlaylist(playlistName: String): Result<Playlist, NetworkError>
 
-    suspend fun getSubCategoryFromLocal(categoryName: String): List<Video>
+    suspend fun searchCategoryList(query: String): Result<List<Category>, NetworkError>
 
-    fun observeCategoryNamesAndFirstVideo(): Flow<Pair<List<Video>, List<String>>>
+    fun observePlaylistFromLocal(playlistName: String): Flow<Playlist>
+
+    fun observeCategoryList(): Flow<List<Category>>
 
     fun observeCategoryNamesByVideoUrl(videoUrl: String): Flow<List<String>>
 
@@ -26,7 +26,8 @@ interface IslamicTubeRepository {
     fun observeCategoryNames(): Flow<List<String>>
 
     suspend fun upsertVideoCategories(
-        oldCategoryNames: List<String>, newCategoryNames: List<String>,
+        oldCategoryNames: List<String>,
+        newCategoryNames: List<String>,
         video: Video
     )
 }

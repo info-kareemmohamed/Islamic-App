@@ -10,6 +10,8 @@ import com.example.myapplication.islamic_tube.domain.repository.IslamicTubeRepos
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -27,11 +29,17 @@ class DetailsViewModel(
     val errorMessage = _errorMessage.receiveAsFlow()
 
     init {
+        // Collect global category names
         viewModelScope.launch {
             repo.observeCategoryNames().collect { categories ->
                 _state.update { it.copy(savedCategoryNames = categories) }
             }
         }
+
+        // Observe changes to the current video and update its category names
+        _state.distinctUntilChangedBy { it.currentVideo }
+            .onEach { observeVideoCategoryNames(_state.value.currentVideo.url) }
+            .launchIn(viewModelScope)
     }
 
     fun onIntent(intent: DetailsIntent) {
@@ -42,43 +50,52 @@ class DetailsViewModel(
             is DetailsIntent.ToggleCreateCategoryDialog ->
                 _state.update { it.copy(isCreateCategoryDialogVisible = intent.isVisible) }
 
-            is DetailsIntent.LoadDataFromLocal -> loadLocalData(intent.video, intent.categoryName)
-            is DetailsIntent.LoadDataFromNetwork -> loadNetworkData(
-                intent.video,
-                intent.categoryName,
-                intent.subCategoryName
-            )
+            is DetailsIntent.ClickVideo ->
+                _state.update { it.copy(currentVideo = intent.video) }
+
+            is DetailsIntent.LoadPlaylist -> {
+                if (intent.isFromFavorite) loadLocalPlaylist(intent.playlistName)
+                else loadNetworkPlaylist(intent.playlistName)
+            }
 
             is DetailsIntent.CreateCategory -> createCategory(intent.categoryName)
-            is DetailsIntent.SaveVideo -> saveVideo(intent.video, intent.categories)
+            is DetailsIntent.SaveVideo -> saveVideo(_state.value.currentVideo, intent.categories)
         }
     }
 
-    private fun loadLocalData(video: Video, categoryName: String) = viewModelScope.launch {
-        _state.update { it.copy(currentCategory = categoryName, currentVideo = video) }
-        _state.update { it.copy(relatedVideos = repo.getSubCategoryFromLocal(categoryName)) }
 
-        observeVideoCategoryNames(video.url)
+    private fun loadLocalPlaylist(playlistName: String) = viewModelScope.launch {
+        _state.update { it.copy(isLoading = true) }
+        repo.observePlaylistFromLocal(playlistName).collectLatest { playlist ->
+            _state.update {
+                it.copy(
+                    playlist = playlist,
+                    currentVideo = if (it.currentVideo.url.isEmpty()) playlist.videos.first() else it.currentVideo,
+                    isLoading = false
+                )
+            }
+        }
     }
 
 
-    private fun loadNetworkData(video: Video, categoryName: String, subCategoryName: String) =
+    private fun loadNetworkPlaylist(playlistName: String) =
         viewModelScope.launch {
-            _state.update {
-                it.copy(currentVideo = video, currentCategory = subCategoryName, isLoading = true)
-            }
+            _state.update { it.copy(isLoading = true) }
 
-            repo.getSubCategoryFromNetwork(categoryName, subCategoryName)
-                .onSuccess { subCat ->
-                    _state.update { it.copy(relatedVideos = subCat.videos, isLoading = false) }
+            repo.getPlaylist(playlistName)
+                .onSuccess { playlist ->
+                    _state.update {
+                        it.copy(
+                            playlist = playlist,
+                            currentVideo = playlist.videos.first(),
+                            isLoading = false
+                        )
+                    }
                 }
                 .onError { error ->
                     _errorMessage.send(error)
                     _state.update { it.copy(isLoading = false) }
                 }
-
-            observeVideoCategoryNames(video.url)
-
         }
 
     private fun createCategory(categoryName: String) = viewModelScope.launch {
@@ -92,8 +109,7 @@ class DetailsViewModel(
         repo.observeCategoryNamesByVideoUrl(videoUrl)
             .onEach { names ->
                 _state.update { it.copy(videoCategoryNames = names) }
-            }
-            .launchIn(viewModelScope)
+            }.launchIn(viewModelScope)
 
 
     private fun saveVideo(video: Video, categories: List<String>) = viewModelScope.launch {
