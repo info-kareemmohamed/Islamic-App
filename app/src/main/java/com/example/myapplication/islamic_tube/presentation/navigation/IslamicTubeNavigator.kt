@@ -20,11 +20,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.example.myapplication.core.presentation.navigation.Routes
-import com.example.myapplication.islamic_tube.domain.model.Video
 import com.example.myapplication.islamic_tube.presentation.details.DetailsScreenRoot
 import com.example.myapplication.islamic_tube.presentation.favorite.FavoriteScreenRoot
 import com.example.myapplication.islamic_tube.presentation.home.HomeScreenRoot
-import kotlin.reflect.typeOf
+import com.example.myapplication.islamic_tube.presentation.search.SearchScreenRoot
 
 
 fun NavGraphBuilder.islamicTubeNavigatorGraph() {
@@ -85,37 +84,21 @@ private fun IslamicNavigator() {
                 HomeScreenRoot(
                     notificationClick = {},
                     searchClick = { navController.navigate(Routes.SearchScreen) },
-                    videoClick = { video, categoryName, subCategoryName ->
-                        navController.navigate(
-                            Routes.DetailsScreen(
-                                video,
-                                categoryName,
-                                subCategoryName
-                            )
-                        )
+                    videoClick = { playlistName ->
+                        navController.navigate(Routes.DetailsScreen(playlistName = playlistName))
                     }
                 )
-
             }
 
-            composable<Routes.DetailsScreen>(
-                typeMap = mapOf(typeOf<Video>() to CustomNavType.VideoType)
-            ) {
-                val video = it.toRoute<Routes.DetailsScreen>().video
-                val categoryName = it.toRoute<Routes.DetailsScreen>().categoryName
-                val subCategoryName = it.toRoute<Routes.DetailsScreen>().subCategoryName
+            composable<Routes.DetailsScreen> {
+                val playlistName = it.toRoute<Routes.DetailsScreen>().playlistName
+                val isFromFavorite = it.toRoute<Routes.DetailsScreen>().isFromFavorite
 
                 DetailsScreenRoot(
                     modifier = Modifier.padding(innerPadding),
-                    selectedVideo = video,
-                    categoryName = categoryName,
-                    subCategoryName = subCategoryName,
-                ) { video, categoryName, subCategoryName ->
-                    navController.navigate(
-                        Routes.DetailsScreen(video, categoryName, subCategoryName)
-                    )
-                }
-
+                    playlistName = playlistName,
+                    isFromFavorite = isFromFavorite
+                )
             }
 
             composable<Routes.LatestScreen> {
@@ -123,8 +106,8 @@ private fun IslamicNavigator() {
             }
 
             composable<Routes.FavoriteScreen> {
-                FavoriteScreenRoot { selectedVideo, subCategoryName ->
-                    navController.navigate(Routes.DetailsScreen(selectedVideo, "", subCategoryName))
+                FavoriteScreenRoot { playlistName ->
+                    navController.navigate(Routes.DetailsScreen(true, playlistName))
                 }
             }
 
@@ -137,7 +120,9 @@ private fun IslamicNavigator() {
             }
 
             composable<Routes.SearchScreen> {
-                Box(modifier = Modifier.fillMaxSize())
+                SearchScreenRoot(onClick = { playlistName ->
+                    navController.navigate(Routes.DetailsScreen(playlistName = playlistName))
+                })
             }
 
         }
