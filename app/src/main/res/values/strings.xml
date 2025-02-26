@@ -21,6 +21,12 @@
     <string name="favorite_screen_title">المفضلة</string>
 
 
+
+    <!--  Search Screen -->
+    <string name="search_screen_search">البحث في التصنيفات الفرعية</string>
+
+
+
     <!--    IslamicTube Bottom Navigation-->
     <string name="bottom_navigation_home">الصفحه الرئسية</string>
     <string name="bottom_navigation_favorite">المفضلة</string>
