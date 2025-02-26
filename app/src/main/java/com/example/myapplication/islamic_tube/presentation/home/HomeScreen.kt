@@ -31,9 +31,7 @@ import com.example.myapplication.R
 import com.example.myapplication.core.domain.NetworkError
 import com.example.myapplication.core.presentation.asUiText
 import com.example.myapplication.core.presentation.theme.ui.MyApplicationTheme
-import com.example.myapplication.islamic_tube.domain.model.Category
-import com.example.myapplication.islamic_tube.domain.model.SubCategory
-import com.example.myapplication.islamic_tube.domain.model.Video
+import com.example.myapplication.islamic_tube.domain.model.Section
 import com.example.myapplication.islamic_tube.presentation.home.components.HomeHadithCard
 import com.example.myapplication.islamic_tube.presentation.home.components.HomeScreenShimmerEffect
 import com.example.myapplication.islamic_tube.presentation.home.components.HomeVideoCard
@@ -44,12 +42,12 @@ import org.koin.androidx.compose.koinViewModel
 fun HomeScreenRoot(
     notificationClick: () -> Unit,
     searchClick: () -> Unit,
-    videoClick: (Video, String, String) -> Unit
+    videoClick: (playList: String) -> Unit
 ) {
     val viewModel = koinViewModel<HomeViewModel>()
     HomeScreen(
         isLoading = viewModel.isLoading.collectAsState().value,
-        categories = viewModel.categories.collectAsState().value,
+        sections = viewModel.categories.collectAsState().value,
         errorMessage = viewModel.errorMessage.collectAsState(initial = null).value,
         notificationClick = notificationClick,
         searchClick = searchClick,
@@ -60,12 +58,12 @@ fun HomeScreenRoot(
 
 @Composable
 private fun HomeScreen(
-    categories: List<Category>,
+    sections: List<Section>,
     isLoading: Boolean,
     errorMessage: NetworkError?,
     notificationClick: () -> Unit,
     searchClick: () -> Unit,
-    videoClick: (Video, String, String) -> Unit
+    videoClick: (playList: String) -> Unit
 ) {
 
     val context = LocalContext.current
@@ -93,9 +91,9 @@ private fun HomeScreen(
                 }
             } else {
                 itemsIndexed(
-                    items = categories,
-                    key = { index, category -> category.name }
-                ) { index, category ->
+                    items = sections,
+                    key = { index, section -> section.name }
+                ) { index, section ->
 
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Row(
@@ -111,7 +109,7 @@ private fun HomeScreen(
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Text(
-                                text = category.name,
+                                text = section.name,
                                 color = colorResource(R.color.black),
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.bodyLarge
@@ -123,16 +121,12 @@ private fun HomeScreen(
                             contentPadding = PaddingValues(10.dp),
                             reverseLayout = true
                         ) {
-                            items(category.subCategories, key = { it.name }) { subCategory ->
+                            items(section.categories, key = { it.name }) { category ->
                                 HomeVideoCard(
-                                    imageUrl = subCategory.imageUrl,
-                                    title = subCategory.name,
+                                    imageUrl = category.imageUrl,
+                                    title = category.name,
                                     onClick = {
-                                        videoClick(
-                                            subCategory.videos.first(),
-                                            category.name,
-                                            subCategory.name
-                                        )
+                                        videoClick(category.name)
                                     }
                                 )
                             }
@@ -157,64 +151,17 @@ private fun HomeScreen(
 
 
 @Preview
-@Preview(showBackground = true,  uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun HomeScreenPreview() {
     MyApplicationTheme {
         HomeScreen(
-            categories = listOf(
-                Category(
-                    name = "رمضان ٢٣",
-                    subCategories = listOf(
-                        SubCategory(
-                            imageUrl = "https://img.youtube.com/vi/cuPKuLxXttA/mqdefault.jpg",
-                            name = "كل يوم آية",
-                            videos = listOf(
-                                Video(
-                                    title = "كل يوم آية 1 - محمد الغليظ",
-                                    url = "https://www.youtube.com/watch?v=tHvfqbfQuXg&list=PLgqtKVxUxe2qJODDwEX6LA3-euaMbQb7Y&index=1&pp=iAQB"
-                                ),
-                                Video(
-                                    title = "كل يوم آية 2 - محمد الغليظ",
-                                    url = "https://www.youtube.com/watch?v=iQQGgB9nFO0&list=PLgqtKVxUxe2qJODDwEX6LA3-euaMbQb7Y&index=2&pp=iAQB"
-                                ),
-                                Video(
-                                    title = "كل يوم آية 3 - محمد الغليظ",
-                                    url = "https://www.youtube.com/watch?v=bXTxrkTk5EE&list=PLgqtKVxUxe2qJODDwEX6LA3-euaMbQb7Y&index=3&pp=iAQB"
-                                ),
-                            )
-                        )
-                    )
-                ),
-                Category(
-                    name = "تثبيت حفظ القران",
-                    subCategories = listOf(
-                        SubCategory(
-                            imageUrl = "https://img.youtube.com/vi/cuPKuLxXttA/mqdefault.jpg",
-                            name = "جزء عم",
-                            videos = listOf(
-                                Video(
-                                    title = "تثبيت وتربيط و تدبر سورة الزلزلة",
-                                    url = "https://www.youtube.com/watch?v=AsFhMZE5o1U&list=PL0146TQmugPBpIPL1OLqf6zQ3qeVrWCnY&index=22&pp=iAQB"
-                                ),
-                                Video(
-                                    title = "تثبيت وتربيط و تدبر سورة العاديات",
-                                    url = "https://www.youtube.com/watch?v=zLStmjf3Xww&list=PL0146TQmugPBpIPL1OLqf6zQ3qeVrWCnY&index=23&pp=iAQB"
-                                ),
-                                Video(
-                                    title = "تثبيت وتربيط و تدبر سورة القارعة",
-                                    url = "https://www.youtube.com/watch?v=E12ENYhmd2s&list=PL0146TQmugPBpIPL1OLqf6zQ3qeVrWCnY&index=24&pp=iAQB"
-                                )
-                            )
-                        ),
-                    )
-                ),
-            ),
+            sections = emptyList(),
             isLoading = false,
             errorMessage = null,
             notificationClick = {},
             searchClick = {},
-            videoClick = { _, _, _ -> }
+            videoClick = { _ -> }
         )
     }
 }

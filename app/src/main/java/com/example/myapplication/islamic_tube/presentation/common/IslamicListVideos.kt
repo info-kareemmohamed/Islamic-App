@@ -12,9 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,12 +54,11 @@ fun IslamicListVideos(
                     textAlign = TextAlign.End,
                     color = colorResource(R.color.black),
                     style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                val videoId by remember { mutableStateOf(relatedVideos[index].url.extractYoutubeVideoId()) }
-                videoId?.let {
+                relatedVideos[index].url.extractYoutubeVideoId()?.let {
                     val thumbnailUrl = "https://img.youtube.com/vi/$it/0.jpg"
                     VideoThumbnail(
                         thumbnailUrl = thumbnailUrl,
