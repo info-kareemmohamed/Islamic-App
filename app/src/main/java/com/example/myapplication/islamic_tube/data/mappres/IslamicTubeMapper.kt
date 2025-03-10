@@ -28,37 +28,38 @@ fun CategoryEntity.toPlaylist(): Playlist = Playlist(
 )
 
 
+fun IslamicTubeDto.toSections(): List<Section> {
+    return sections.map { it.toSection() }
+}
 
 
-
-fun ItemDto.toVideo(): Video = Video(
-    title = title,
-    url = url
-)
-
-fun CategoryDto.toCategory(): Category = Category(
-    name = title,
-    imageUrl = url
-)
-
-fun SectionDto.toSection(): Section = Section(
-    name = title,
-    categories = categories.map { categoryDto -> categoryDto.toCategory() }
-)
-
-fun IslamicTubeDto.toSections(): List<Section> = sections.map { it.toSection() }
+fun SectionDto.toSection(): Section {
+    return Section(
+        name = title,
+        categories = categories.map { it.toCategory() }
+    )
+}
 
 
-fun IslamicTubeDto.toPlaylists(): List<Playlist> =
-    items.groupBy { it.category }
-        .map { (categoryName, items) ->
-            Playlist(
-                name = categoryName,
-                videos = items.map {videoDto ->
-                    videoDto.toVideo() }
-            )
-        }
+fun CategoryDto.toCategory(): Category {
+    return Category(
+        name = title,
+        imageUrl = url,
+    )
+}
 
 
+fun ItemDto.toVideo(): Video {
+    return Video(
+        title = title,
+        url = url
+    )
+}
 
+fun List<ItemDto>.toPlaylist(name: String): Playlist {
+    return Playlist(
+        name = name,
+        videos = map { it.toVideo() }
+    )
+}
 

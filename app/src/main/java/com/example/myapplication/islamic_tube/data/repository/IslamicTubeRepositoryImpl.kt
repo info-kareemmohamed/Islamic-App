@@ -6,11 +6,13 @@ import com.example.myapplication.core.domain.NetworkError
 import com.example.myapplication.core.domain.Result
 import com.example.myapplication.core.domain.map
 import com.example.myapplication.islamic_tube.data.local.CategoryDao
+import com.example.myapplication.islamic_tube.data.mappres.toCategory
 import com.example.myapplication.islamic_tube.data.mappres.toPlaylist
-import com.example.myapplication.islamic_tube.data.mappres.toPlaylists
 import com.example.myapplication.islamic_tube.data.mappres.toSections
 import com.example.myapplication.islamic_tube.data.mappres.toVideoEntity
 import com.example.myapplication.islamic_tube.data.networking.dto.IslamicTubeDto
+import com.example.myapplication.islamic_tube.data.networking.dto.ItemDto
+import com.example.myapplication.islamic_tube.data.networking.dto.SectionDto
 import com.example.myapplication.islamic_tube.domain.model.Category
 import com.example.myapplication.islamic_tube.domain.model.Playlist
 import com.example.myapplication.islamic_tube.domain.model.Section
@@ -26,41 +28,52 @@ class IslamicTubeRepositoryImpl(
     private val httpClient: HttpClient,
     private val categoryDao: CategoryDao,
 ) : IslamicTubeRepository {
-    val sections = mutableListOf<Section>()
-    val playlists = mutableListOf<Playlist>()
+    // TODO: Remove this temporary cache once the API is ready.
+    val sections = mutableListOf<SectionDto>()
 
     override suspend fun getSections(): Result<List<Section>, NetworkError> {
         val result = safeCall<IslamicTubeDto> {
-            httpClient.get(urlString = BuildConfig.API_BASE_URL)
+            httpClient.get(urlString = "${BuildConfig.API_BASE_URL}data.json")
         }
+        // TODO: Replace cached logic with direct API call when available.
         return result.map { dto ->
-            val sectionsList = dto.toSections()
-            val playlistsList = dto.toPlaylists()
+            val sectionsList = dto.sections
             sections.apply {
                 clear()
                 addAll(sectionsList)
             }
-            playlists.apply {
-                clear()
-                addAll(playlistsList)
-            }
-            sectionsList
+            dto.toSections()
         }
     }
 
     override suspend fun getPlaylist(
         playlistName: String
-    ): Result<Playlist, NetworkError> =
-        playlists.find { it.name == playlistName }?.let { Result.Success(it) }
-            ?: Result.Error(NetworkError.UNKNOWN)
+    ): Result<Playlist, NetworkError> {
+        // TODO: Replace cached logic with direct API call when available.
+        val playlistId = sections
+            .flatMap { it.categories }
+            .find { it.title == playlistName }
+            ?.playlistId.orEmpty()
+
+        if (playlistId.isEmpty()) {
+            return Result.Error(NetworkError.UNKNOWN)
+        }
+
+        return safeCall<List<ItemDto>> {
+            httpClient.get(urlString = "${BuildConfig.API_BASE_URL}playlists/$playlistId.json")
+        }.map { items ->
+            items.toPlaylist(playlistName)
+        }
+    }
 
     override suspend fun searchCategoryList(query: String): Result<List<Category>, NetworkError> =
+        // TODO: Replace cached logic with direct API call when available.
         sections.flatMap { section ->
             section.categories.filter { category ->
-                category.name.contains(query, ignoreCase = true)
+                category.title.contains(query, ignoreCase = true)
             }
         }.takeIf { it.isNotEmpty() }
-            ?.let { Result.Success(it) }
+            ?.let { Result.Success(it.map { it.toCategory() }) }
             ?: Result.Error(NetworkError.UNKNOWN)
 
     override fun observePlaylistFromLocal(playlistName: String): Flow<Playlist> =
